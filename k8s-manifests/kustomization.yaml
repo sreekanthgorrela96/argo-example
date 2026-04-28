@@ -1,0 +1,5 @@
+# POC: apply with `kubectl apply -k k8s-manifests` (wraps base).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - base

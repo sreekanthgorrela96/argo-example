@@ -1,0 +1,3 @@
+manifest-checkout/
+*.log
+.DS_Store

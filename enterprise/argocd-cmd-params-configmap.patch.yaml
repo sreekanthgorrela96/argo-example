@@ -1,0 +1,16 @@
+# Snippet: mount OIDC settings via argocd-cmd-params-cm (method varies by install).
+# Apply patches through your GitOps for Argo CD or Helm values in production.
+# Reference: https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+  namespace: argocd
+data:
+  # server.oidc.config: |
+  #   name: Your IdP
+  #   issuer: https://your-idp.example.com
+  #   clientID: argocd
+  #   clientSecret: $oidc.argocd.clientSecret
+  #   ...
+  placeholder: "replace-with-real-oidc-config-per-docs"

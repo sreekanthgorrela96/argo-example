@@ -1,0 +1,23 @@
+# Enterprise: sync production overlay (higher replicas/resources).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: secureforge-ui-prod
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: secureforge
+  source:
+    repoURL: https://github.com/your-org/k8s-manifests.git
+    targetRevision: main
+    path: k8s-manifests/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: secureforge
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

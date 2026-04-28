@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secureforge-ui
+  namespace: secureforge
+  labels:
+    app: secureforge-ui
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: secureforge-ui
+  template:
+    metadata:
+      labels:
+        app: secureforge-ui
+    spec:
+      containers:
+        - name: ui
+          # Jenkins updates this line (image + tag)
+          image: docker.io/library/nginx:1.25-alpine
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      # Uncomment when using a private registry:
+      # imagePullSecrets:
+      #   - name: regcred
