@@ -80,15 +80,14 @@ If you log in on the host only, prefer credential **`docker-hub-creds`** so Jenk
 ## Create the Pipeline job
 
 1. **New Item** → name e.g. `secureforge-gitops` → **Pipeline** → OK.
-2. **Pipeline** section:
+2. Enable parameters: check **This project is parameterized** if you created the job without parameters, then add a **String Parameter** named **`DOCKER_IMAGE`** (must match the Jenkinsfile).
+3. **Pipeline** section:
    - Definition: **Pipeline script from SCM**
    - SCM: **Git**
    - Repository URL: `https://github.com/sreekanthgorrela96/argo-example.git`
    - Branch: `*/main`
    - Script Path: `Jenkinsfile`
-3. Save → **Build Now**.
-
-Update **IMAGE_NAME** in the Jenkinsfile (on `main`) to your real registry image before expecting green builds.
+4. Save → use **Build with Parameters** and set **DOCKER_IMAGE** (e.g. `myuser/secureforge-ui`), then build.
 
 ## Validate the GitOps loop
 
@@ -112,6 +111,8 @@ docker compose -f docker-compose.jenkins.yml down -v
 
 | Issue | What to try |
 |-------|-------------|
+| `Could not find credentials docker-hub-creds` | Create a credential with ID **`docker-hub-creds`** exactly (case-sensitive). |
+| `insufficient_scope` / `denied` on **push** after login | **DOCKER_IMAGE** must be `yourhubuser/reponame` under an account the token can push to. Or your Docker Hub token is read-only / wrong user. |
 | `permission denied while trying to connect to the Docker daemon socket` | Wrong **`DOCKER_GID`**. Run the `stat` / `alpine` command above, update `.env`, then `docker compose ... up -d --force-recreate`. Use **`jenkins-up.ps1`** to regenerate `.env`. |
 | `docker: not found` inside job | Rebuild image: `docker compose ... build --no-cache`. |
 | `git push` fails | PAT must have **repo** scope; credential ID must be exactly **`git-manifests-creds`**. |
