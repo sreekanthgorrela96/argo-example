@@ -62,21 +62,20 @@ Open **http://localhost:8081**
 
 **Manage Jenkins → Credentials → (global) → Add Credentials**
 
-| Kind              | ID                     | Usage |
-|-------------------|------------------------|--------|
+| Kind                  | ID                     | Usage |
+|-----------------------|------------------------|--------|
 | Username + password | `git-manifests-creds` | GitHub username + **PAT** (not your account password) |
+| Username + password | `docker-hub-creds`    | Docker Hub username + [access token](https://hub.docker.com/settings/security); required before **`docker push`** in the Jenkinsfile |
 
-Optional but needed for `docker push`:
+Set the **`DOCKER_IMAGE`** parameter when you build (e.g. `yourhubuser/secureforge-ui`). Do **not** use the placeholder `your-docker-repo/secureforge-ui` — that is not your Docker Hub namespace, and push will fail with `insufficient_scope` / `denied` even if you are logged in.
 
-- Add **Username with password** for Docker Hub (note the ID, e.g. `dockerhub-creds`).  
-  Then add a **Pipeline** stage before push (or use **Manage Jenkins → Credentials** + shell `docker login` in the Jenkinsfile). Quick POC approach:
+Optional fallback (same Docker daemon as the host):
 
 ```bash
-# One-time interactive login on the host (same Docker engine Jenkins uses):
 docker login
 ```
 
-Images are pushed via the **host** Docker daemon, so a successful `docker login` on the host often allows Jenkins jobs to push until credentials expire. For a durable setup, add `withCredentials` around `docker login` in the Jenkinsfile.
+If you log in on the host only, prefer credential **`docker-hub-creds`** so Jenkins runs `docker login` inside the job (durable).
 
 ## Create the Pipeline job
 
