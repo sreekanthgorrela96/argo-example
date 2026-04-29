@@ -1,0 +1,26 @@
+# Local Jenkins for Argo CD GitOps POC (Docker Desktop on Windows/macOS/Linux).
+# UI: http://localhost:8081  (8080 left free for kubectl port-forward / other apps)
+#
+# Security: container runs as root so `docker` CLI can use the mounted Docker socket.
+# Use only on your machine for POC, not on shared servers.
+
+services:
+  jenkins:
+    build:
+      context: ./docker/jenkins
+      dockerfile: Dockerfile
+    image: secureforge-jenkins:poc
+    container_name: jenkins-argocd-poc
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    user: "0:0"
+    environment:
+      TZ: UTC
+
+volumes:
+  jenkins_home:

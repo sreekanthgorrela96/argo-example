@@ -14,6 +14,8 @@ Jenkins (or manual Git) updates the image in `k8s-manifests/base/deployment.yaml
 | [docs](docs/) | E2E demo steps and enterprise hardening |
 | [enterprise](enterprise/) | Example patches (OIDC placeholder, ExternalSecret) |
 | [Jenkinsfile](Jenkinsfile) | Build → push → update manifests branch |
+| [docker-compose.jenkins.yml](docker-compose.jenkins.yml) | Local Jenkins (Docker) for CI POC |
+| [docs/JENKINS-LOCAL.md](docs/JENKINS-LOCAL.md) | Install Jenkins, credentials, Pipeline job |
 
 ## Minikube POC
 
@@ -57,10 +59,17 @@ Jenkins (or manual Git) updates the image in `k8s-manifests/base/deployment.yaml
 .\scripts\validate-manifests.ps1
 ```
 
-## Jenkins
+## Jenkins (local POC)
 
-- Copy [Jenkinsfile](Jenkinsfile) into your **application** repository (the one you `docker build`). Update `IMAGE_NAME`, `MANIFESTS_REPO`, and credentials id `git-manifests-creds`.
-- The pipeline updates `k8s-manifests/base/deployment.yaml` in the **manifests** repository (this layout).
+1. Start Docker Desktop, then from this repo root:
+   ```powershell
+   .\scripts\jenkins-up.ps1
+   ```
+   Or: `docker compose -f docker-compose.jenkins.yml up -d --build`
+2. Open **http://localhost:8081** (8081 avoids clashing with app port-forwards on 8080).
+3. Full steps (unlock, GitHub PAT credential `git-manifests-creds`, Pipeline from SCM): **[docs/JENKINS-LOCAL.md](docs/JENKINS-LOCAL.md)**.
+
+Set **`IMAGE_NAME`** in [Jenkinsfile](Jenkinsfile) to a registry you can push to (e.g. `docker.io/<user>/secureforge-ui`). The pipeline updates `k8s-manifests/base/deployment.yaml` in this same repo.
 
 ## Enterprise
 

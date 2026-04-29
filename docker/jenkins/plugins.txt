@@ -1,0 +1,4 @@
+# Minimal set for Pipeline from SCM + Git + withCredentials
+git
+workflow-aggregator
+credentials-binding
