@@ -2,9 +2,21 @@
 
 This repo ships a **Docker Compose** stack that runs Jenkins with:
 
-- **Docker CLI** + **Git** (for your `Jenkinsfile` `sh` steps)
+- **Docker CLI** (static binary) + **Git** (for your `Jenkinsfile` `sh` steps)
 - Access to the **host Docker engine** via `/var/run/docker.sock` (build/push images)
 - Pre-installed plugins: Git, Pipeline (`workflow-aggregator`), `credentials-binding`
+
+### Why `docker` failed inside Pipeline jobs
+
+The Jenkins process runs as user **`jenkins`** (not root). The socket `/var/run/docker.sock` is usually mode `660` and owned by group **`docker`** on the host. That group has a numeric **GID** that must match inside the container.
+
+Compose adds Jenkins to that group via **`group_add`**. The helper script **`scripts/jenkins-up.ps1`** detects the host socket GID and writes a **`.env`** file with `DOCKER_GID=...`. If you start Compose manually, copy **`.env.example`** to **`.env`** and set `DOCKER_GID` after running:
+
+```powershell
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock alpine:3.20 stat -c '%g' /var/run/docker.sock
+```
+
+After changing `.env`, recreate the container: `docker compose -f docker-compose.jenkins.yml up -d --force-recreate`.
 
 ## Prerequisites
 
@@ -14,9 +26,17 @@ This repo ships a **Docker Compose** stack that runs Jenkins with:
 
 ## Start Jenkins
 
-From the repository root:
+From the repository root (recommended — detects `DOCKER_GID`):
 
 ```powershell
+.\scripts\jenkins-up.ps1
+```
+
+Or manually:
+
+```powershell
+copy .env.example .env
+# Edit .env — set DOCKER_GID to output of: docker run ... stat (see above)
 docker compose -f docker-compose.jenkins.yml up -d --build
 ```
 
@@ -93,7 +113,7 @@ docker compose -f docker-compose.jenkins.yml down -v
 
 | Issue | What to try |
 |-------|-------------|
-| `permission denied` on Docker socket | Compose already runs Jenkins as root (`user: "0:0"`). Restart Docker Desktop. |
+| `permission denied while trying to connect to the Docker daemon socket` | Wrong **`DOCKER_GID`**. Run the `stat` / `alpine` command above, update `.env`, then `docker compose ... up -d --force-recreate`. Use **`jenkins-up.ps1`** to regenerate `.env`. |
 | `docker: not found` inside job | Rebuild image: `docker compose ... build --no-cache`. |
 | `git push` fails | PAT must have **repo** scope; credential ID must be exactly **`git-manifests-creds`**. |
 | `sed` / `sh` errors | Pipeline must run on the built-in Linux node (default for this container). Do not use Windows batch agents for this Jenkinsfile. |

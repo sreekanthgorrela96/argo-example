@@ -1,8 +1,9 @@
 # Local Jenkins for Argo CD GitOps POC (Docker Desktop on Windows/macOS/Linux).
-# UI: http://localhost:8081  (8080 left free for kubectl port-forward / other apps)
+# UI: http://localhost:8081
 #
-# Security: container runs as root so `docker` CLI can use the mounted Docker socket.
-# Use only on your machine for POC, not on shared servers.
+# IMPORTANT: Jenkins runs as user `jenkins`, not root. The Docker socket is typically
+# root:docker (mode 660). Set DOCKER_GID to the socket's group id on the host.
+# Use scripts/jenkins-up.ps1 or copy .env.example -> .env after setting DOCKER_GID.
 
 services:
   jenkins:
@@ -18,7 +19,10 @@ services:
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-    user: "0:0"
+    group_add:
+      # Host Docker socket group; scripts/jenkins-up.ps1 writes .env — or set DOCKER_GID manually
+      # Default 0 matches many Docker Desktop setups; Linux often uses 999 — always prefer auto-detect via jenkins-up.ps1 / .env
+      - "${DOCKER_GID:-0}"
     environment:
       TZ: UTC
 

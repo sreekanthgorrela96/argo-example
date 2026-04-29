@@ -65,7 +65,8 @@ Jenkins (or manual Git) updates the image in `k8s-manifests/base/deployment.yaml
    ```powershell
    .\scripts\jenkins-up.ps1
    ```
-   Or: `docker compose -f docker-compose.jenkins.yml up -d --build`
+   This writes `.env` with **`DOCKER_GID`** so user `jenkins` can access the Docker socket (see [docs/JENKINS-LOCAL.md](docs/JENKINS-LOCAL.md)).  
+   Or: copy `.env.example` → `.env`, set `DOCKER_GID`, then `docker compose -f docker-compose.jenkins.yml up -d --build`
 2. Open **http://localhost:8081** (8081 avoids clashing with app port-forwards on 8080).
 3. Full steps (unlock, GitHub PAT credential `git-manifests-creds`, Pipeline from SCM): **[docs/JENKINS-LOCAL.md](docs/JENKINS-LOCAL.md)**.
 
