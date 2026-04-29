@@ -4,7 +4,7 @@ pipeline {
   environment {
     IMAGE_NAME = 'your-docker-repo/secureforge-ui'
     TAG = "${env.BUILD_NUMBER}"
-    MANIFESTS_REPO = 'https://github.com/your-org/k8s-manifests.git'
+    MANIFESTS_REPO = 'https://github.com/sreekanthgorrela96/argo-example.git'
     MANIFESTS_BRANCH = 'main'
     KUSTOMIZE_DEPLOYMENT_PATH = 'k8s-manifests/base/deployment.yaml'
   }

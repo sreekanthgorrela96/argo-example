@@ -7,7 +7,7 @@ metadata:
 spec:
   description: SecureForge applications
   sourceRepos:
-    - https://github.com/your-org/k8s-manifests.git
+    - https://github.com/sreekanthgorrela96/argo-example.git
   destinations:
     - namespace: secureforge
       server: https://kubernetes.default.svc

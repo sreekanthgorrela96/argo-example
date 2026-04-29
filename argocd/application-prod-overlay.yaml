@@ -9,7 +9,7 @@ metadata:
 spec:
   project: secureforge
   source:
-    repoURL: https://github.com/your-org/k8s-manifests.git
+    repoURL: https://github.com/sreekanthgorrela96/argo-example.git
     targetRevision: main
     path: k8s-manifests/overlays/prod
   destination:
