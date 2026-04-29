@@ -4,13 +4,12 @@ pipeline {
   parameters {
     string(
       name: 'DOCKER_IMAGE',
-      defaultValue: '',
-      description: 'Required. Docker Hub image without tag, e.g. myhubuser/secureforge-ui (must be a repo you can push to).'
+      defaultValue: 'PLEASE_SET_NAMESPACE/secureforge-ui',
+      description: 'Docker Hub image without tag. Replace YOUR_NAMESPACE with your Docker Hub username or org (must be pushable).'
     )
   }
 
   environment {
-    IMAGE_NAME = "${params.DOCKER_IMAGE ?: ''}"
     TAG = "${env.BUILD_NUMBER}"
     MANIFESTS_REPO = 'https://github.com/sreekanthgorrela96/argo-example.git'
     MANIFESTS_BRANCH = 'main'
@@ -21,12 +20,18 @@ pipeline {
     stage('Validate registry target') {
       steps {
         script {
-          def img = env.IMAGE_NAME?.trim()
-          if (!img) {
-            error('DOCKER_IMAGE parameter is empty. Rebuild with DOCKER_IMAGE set (Job → Build with Parameters → DOCKER_IMAGE). Example: myhubuser/secureforge-ui')
+          // Runtime evidence: empty DOCKER_IMAGE (old job default "") left IMAGE_NAME unset. Groovy "" is truthy for ?: so we normalize here.
+          def raw = params.DOCKER_IMAGE?.trim()
+          if (!raw) {
+            raw = 'PLEASE_SET_NAMESPACE/secureforge-ui'
+          }
+          env.IMAGE_NAME = raw
+          def img = env.IMAGE_NAME
+          if (img == 'PLEASE_SET_NAMESPACE/secureforge-ui' || img.startsWith('PLEASE_SET_')) {
+            error('Set DOCKER_IMAGE under Build with Parameters to your real repo, e.g. yourdockerhubuser/secureforge-ui (replace the default PLEASE_SET_NAMESPACE/...).')
           }
           if (img.startsWith('your-docker-repo/')) {
-            error('DOCKER_IMAGE is still the docs placeholder "your-docker-repo/...". Replace with your Docker Hub namespace, e.g. myhubuser/secureforge-ui')
+            error('DOCKER_IMAGE is still the docs placeholder "your-docker-repo/...". Use your Docker Hub namespace, e.g. yourdockerhubuser/secureforge-ui')
           }
           if (img.contains('.docker.io') || img.startsWith('docker.io/')) {
             error('DOCKER_IMAGE must be name/repo only (no docker.io/ prefix). Example: myhubuser/secureforge-ui')
