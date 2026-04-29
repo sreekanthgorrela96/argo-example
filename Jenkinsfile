@@ -28,13 +28,16 @@ pipeline {
           env.IMAGE_NAME = raw
           def img = env.IMAGE_NAME
           if (img == 'PLEASE_SET_NAMESPACE/secureforge-ui' || img.startsWith('PLEASE_SET_')) {
-            error('Set DOCKER_IMAGE under Build with Parameters to your real repo, e.g. yourdockerhubuser/secureforge-ui (replace the default PLEASE_SET_NAMESPACE/...).')
+            error('Set DOCKER_IMAGE (Build with Parameters) to your real Docker Hub repo: <your_hub_username>/secureforge-ui. Replace the default PLEASE_SET_NAMESPACE/...')
+          }
+          if (img.startsWith('yourdockerhubuser/')) {
+            error('DOCKER_IMAGE must be your real Docker Hub username, not the literal text "yourdockerhubuser". Example: if you log in as jsmith on Docker Hub, use jsmith/secureforge-ui.')
           }
           if (img.startsWith('your-docker-repo/')) {
-            error('DOCKER_IMAGE is still the docs placeholder "your-docker-repo/...". Use your Docker Hub namespace, e.g. yourdockerhubuser/secureforge-ui')
+            error('DOCKER_IMAGE is still the old placeholder "your-docker-repo/...". Use your Docker Hub namespace (same user you put in docker-hub-creds).')
           }
           if (img.contains('.docker.io') || img.startsWith('docker.io/')) {
-            error('DOCKER_IMAGE must be name/repo only (no docker.io/ prefix). Example: myhubuser/secureforge-ui')
+            error('DOCKER_IMAGE must be name/repo only (no docker.io/ prefix). Example: myaccount/secureforge-ui')
           }
         }
       }
