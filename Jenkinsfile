@@ -17,7 +17,7 @@ pipeline {
         
         // Credential IDs defined in Jenkins
         DOCKER_CREDS_ID = 'docker-hub-creds'
-        GIT_CREDS_ID = 'git-manifests-creds'
+        GIT_CREDS_ID = 'github-token-creds'
     }
 
     stages {
