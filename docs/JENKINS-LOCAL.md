@@ -64,8 +64,8 @@ Open **http://localhost:8081**
 
 | Kind                  | ID                     | Usage |
 |-----------------------|------------------------|--------|
-| Username + password | `git-manifests-creds` | GitHub username + **PAT** (not your account password) |
-| Username + password | `docker-hub-creds`    | Docker Hub username + [access token](https://hub.docker.com/settings/security); required before **`docker push`** in the Jenkinsfile |
+| Username + password | `git-manifests-creds` **or** `github-token-creds` | GitHub username + **PAT** with `repo` scope. The [Jenkinsfile](https://github.com/sreekanthgorrela96/argo-example/blob/main/Jenkinsfile) in this repo uses ID **`github-token-creds`**. |
+| Username + password | `docker-hub-creds`    | Docker Hub; used with **`docker.withRegistry`** (install **Docker Pipeline** plugin). |
 
 Set the **`DOCKER_IMAGE`** parameter when you build (e.g. `yourhubuser/secureforge-ui`). Do **not** use the placeholder `your-docker-repo/secureforge-ui` — that is not your Docker Hub namespace, and push will fail with `insufficient_scope` / `denied` even if you are logged in.
 
