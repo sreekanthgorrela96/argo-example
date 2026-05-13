@@ -61,7 +61,7 @@ pipeline {
                           echo "MANIFESTS_REPO must be https://github.com/owner/repo.git"
                           exit 1
                         fi
-                        AUTH_REMOTE="https://x-access-token:${GIT_TOKEN}@github.com/${GITHUB_REPO}"
+                        AUTH_REMOTE="https://x-access-token:${github-token-creds}@github.com/${GITHUB_REPO}"
                         rm -rf manifest-checkout
                         git clone --depth 1 --branch "${MANIFESTS_BRANCH}" "$AUTH_REMOTE" manifest-checkout
                         cd manifest-checkout
