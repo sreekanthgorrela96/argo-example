@@ -47,3 +47,14 @@ If you use **Secret text** only, switch the pipeline to a `string` binding or ke
 ## 5. Remote URL stripped before push
 
 Some Git versions store `origin` **without** credentials after clone, so `git push` can hit GitHub without the PAT and return **403**. The Jenkinsfile runs `git remote set-url origin` to the `x-access-token` URL immediately before `git push`. If 403 persists after that change, focus on sections 1–3 (token scopes, branch protection, SSO).
+
+## 6. `Invalid username or token` and the URL contains your **credential ID** (e.g. `x-access-token:github-token-creds`)
+
+The password used for Git is **not** a real PAT. Common mistakes:
+
+- **Password** field in Jenkins was set to the credential **ID** string instead of the GitHub token.
+- Wrong credential **type** for this binding (the Jenkinsfile uses **`usernamePassword`** with the PAT in **Password**).
+
+**Fix:** **Manage Jenkins → Credentials →** open **`github-token-creds`** → **Password** = real GitHub PAT (`ghp_...` or `github_pat_...`). **Username** = your GitHub username or `git`.
+
+If you only use a **Secret text** credential for the PAT, change the pipeline to `withCredentials([string(credentialsId: 'github-token-creds', variable: 'GITHUB_PAT')])` and build `AUTH_REMOTE` with `$GITHUB_PAT` instead of `$GIT_TOKEN`.
