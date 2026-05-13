@@ -55,9 +55,15 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: "${env.GIT_CREDS_ID}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     sh '''
                         set -e
-                        CLONE_URL=$(echo "${MANIFESTS_REPO}" | sed "s#^https://#https://${GIT_USER}:${GIT_TOKEN}@#")
+                        # GitHub HTTPS with PAT: use x-access-token (password = PAT). user:pass in URL can 403 with fine-grained tokens or wrong scopes.
+                        GITHUB_REPO=$(echo "${MANIFESTS_REPO}" | sed -n 's#^https://github.com/##p')
+                        if [ -z "$GITHUB_REPO" ]; then
+                          echo "MANIFESTS_REPO must be https://github.com/owner/repo.git"
+                          exit 1
+                        fi
+                        AUTH_REMOTE="https://x-access-token:${GIT_TOKEN}@github.com/${GITHUB_REPO}"
                         rm -rf manifest-checkout
-                        git clone --depth 1 --branch "${MANIFESTS_BRANCH}" "$CLONE_URL" manifest-checkout
+                        git clone --depth 1 --branch "${MANIFESTS_BRANCH}" "$AUTH_REMOTE" manifest-checkout
                         cd manifest-checkout
                         sed -i "s|^[[:space:]]*image:.*|          image: ${IMAGE_NAME}:${TAG}|" "${KUSTOMIZE_DEPLOYMENT_PATH}"
                         git config user.name "jenkins-bot"

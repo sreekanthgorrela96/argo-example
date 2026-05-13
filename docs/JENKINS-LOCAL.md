@@ -112,7 +112,7 @@ docker compose -f docker-compose.jenkins.yml down -v
 | Issue | What to try |
 |-------|-------------|
 | `Could not find credentials docker-hub-creds` | Create a credential with ID **`docker-hub-creds`** exactly (case-sensitive). |
-| `insufficient_scope` / `denied` on **push** after login | **DOCKER_IMAGE** must be `yourhubuser/reponame` under an account the token can push to. Or your Docker Hub token is read-only / wrong user. |
+| `git push` **403** / `Permission denied` | PAT missing **write** access, **branch protection** on `main`, or **SSO** not authorized. See [docs/GITHUB-GIT-PUSH-403.md](GITHUB-GIT-PUSH-403.md). |
 | `permission denied while trying to connect to the Docker daemon socket` | Wrong **`DOCKER_GID`**. Run the `stat` / `alpine` command above, update `.env`, then `docker compose ... up -d --force-recreate`. Use **`jenkins-up.ps1`** to regenerate `.env`. |
 | `docker: not found` inside job | Rebuild image: `docker compose ... build --no-cache`. |
 | `git push` fails | PAT must have **repo** scope; credential ID must be exactly **`git-manifests-creds`**. |

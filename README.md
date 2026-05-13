@@ -70,7 +70,7 @@ Jenkins (or manual Git) updates the image in `k8s-manifests/base/deployment.yaml
 2. Open **http://localhost:8081** (8081 avoids clashing with app port-forwards on 8080).
 3. Full steps (unlock, GitHub PAT credential `git-manifests-creds`, Pipeline from SCM): **[docs/JENKINS-LOCAL.md](docs/JENKINS-LOCAL.md)**.
 
-The [Jenkinsfile](Jenkinsfile) uses **`DOCKER_IMAGE`** (default `gorrelasreekanth/secureforge-ui`), **`docker-hub-creds`** (Docker Hub), and **`github-token-creds`** (GitHub PAT with `repo` scope). Install the **Docker Pipeline** plugin so `docker.withRegistry` works. It updates [k8s-manifests/base/deployment.yaml](k8s-manifests/base/deployment.yaml) and pushes to `main`. You can rename credentials in the Jenkinsfile `environment` block if your IDs differ.
+If **`git push`** fails with **403**, see [docs/GITHUB-GIT-PUSH-403.md](docs/GITHUB-GIT-PUSH-403.md) (PAT scopes, branch protection, SSO).
 
 ## Enterprise
 
