@@ -5,15 +5,17 @@ pipeline {
         string(
             name: 'DOCKER_IMAGE',
             defaultValue: 'gorrelasreekanth/secureforge-ui',
-            description: 'Docker Hub image (namespace/repo); must match docker-hub-creds.'
+            description: 'Docker Hub image (namespace/repo).'
         )
     }
 
     environment {
         TAG = "${env.BUILD_NUMBER}"
-        MANIFESTS_REPO = 'https://github.com/sreekanthgorrela96/argo-example.git'
+        MANIFESTS_REPO = 'github.com/sreekanthgorrela96/argo-example.git'
         MANIFESTS_BRANCH = 'main'
         KUSTOMIZE_DEPLOYMENT_PATH = 'k8s-manifests/base/deployment.yaml'
+        
+        // Jenkins Credentials IDs
         DOCKER_CREDS_ID = 'docker-hub-creds'
         GIT_CREDS_ID = 'github-token-creds'
     }
@@ -23,10 +25,9 @@ pipeline {
             steps {
                 script {
                     env.IMAGE_NAME = params.DOCKER_IMAGE?.trim() ?: 'gorrelasreekanth/secureforge-ui'
-                    if (env.IMAGE_NAME.contains('PLEASE_SET') ||
-                            env.IMAGE_NAME.contains('your-docker-repo') ||
-                            env.IMAGE_NAME.startsWith('yourdockerhubuser/')) {
-                        error "Invalid DOCKER_IMAGE: ${env.IMAGE_NAME}"
+                    // Basic sanity check to ensure build doesn't run on placeholder values
+                    if (env.IMAGE_NAME.contains('your-docker-repo') || env.IMAGE_NAME.startsWith('PLEASE_SET')) {
+                        error "Invalid DOCKER_IMAGE: ${env.IMAGE_NAME}. Please set a real namespace/repo."
                     }
                 }
             }
@@ -40,12 +41,15 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', "${env.DOCKER_CREDS_ID}") {
-                        sh "docker push ${IMAGE_NAME}:${TAG}"
-                        sh "docker tag ${IMAGE_NAME}:${TAG} ${IMAGE_NAME}:latest"
-                        sh "docker push ${IMAGE_NAME}:latest"
-                    }
+                // withCredentials is used instead of docker.withRegistry to avoid plugin dependency errors
+                withCredentials([usernamePassword(credentialsId: "${env.DOCKER_CREDS_ID}", usernameVariable: 'HUB_USER', passwordVariable: 'HUB_PASS')]) {
+                    sh """
+                        echo "${HUB_PASS}" | docker login -u "${HUB_USER}" --password-stdin
+                        docker push ${IMAGE_NAME}:${TAG}
+                        docker tag ${IMAGE_NAME}:${TAG} ${IMAGE_NAME}:latest
+                        docker push ${IMAGE_NAME}:latest
+                        docker logout
+                    """
                 }
             }
         }
@@ -53,47 +57,48 @@ pipeline {
         stage('Update GitOps Manifest') {
             steps {
                 withCredentials([usernamePassword(credentialsId: "${env.GIT_CREDS_ID}", usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
-                    sh '''
+                    sh """
                         set -e
-                        # PAT must be the Password of a "Username with password" credential — not the credential ID.
-                        if [ -z "$GIT_TOKEN" ] || [ "$GIT_TOKEN" = "$GIT_CREDS_ID" ]; then
-                          echo "ERROR: GIT_TOKEN is empty or equals the credential ID ($GIT_CREDS_ID)."
-                          echo "In Jenkins: Credentials -> update $GIT_CREDS_ID -> Password must be your GitHub PAT (ghp_... or github_pat_...), not the ID string."
-                          exit 2
-                        fi
-                        case "$GIT_TOKEN" in ghp_*|github_pat_*) ;; *)
-                          echo "WARN: Password does not look like a GitHub PAT. Continuing anyway."
-                        ;; esac
-                        GITHUB_REPO=$(echo "${MANIFESTS_REPO}" | sed -n 's#^https://github.com/##p')
-                        if [ -z "$GITHUB_REPO" ]; then
-                          echo "MANIFESTS_REPO must be https://github.com/owner/repo.git"
-                          exit 1
-                        fi
-                        AUTH_REMOTE="https://x-access-token:${GIT_TOKEN}@github.com/${GITHUB_REPO}"
+                        # Clean up previous runs
                         rm -rf manifest-checkout
-                        git clone --depth 1 --branch "${MANIFESTS_BRANCH}" "$AUTH_REMOTE" manifest-checkout
+                        
+                        # Use x-access-token (GitHub) or oauth2 (GitLab) for token auth
+                        # We use the token directly in the URL for the most reliable push
+                        git clone --depth 1 --branch ${MANIFESTS_BRANCH} https://x-access-token:${GIT_TOKEN}@${MANIFESTS_REPO} manifest-checkout
+                        
                         cd manifest-checkout
-                        sed -i "s|^[[:space:]]*image:.*|          image: ${IMAGE_NAME}:${TAG}|" "${KUSTOMIZE_DEPLOYMENT_PATH}"
+                        
+                        # Use sed to update the specific image line
+                        sed -i "s|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:${TAG}|g" ${KUSTOMIZE_DEPLOYMENT_PATH}
+                        
                         git config user.name "jenkins-bot"
                         git config user.email "jenkins@secureforge.com"
-                        git add "${KUSTOMIZE_DEPLOYMENT_PATH}"
+                        
+                        git add ${KUSTOMIZE_DEPLOYMENT_PATH}
+                        
+                        # Only commit if there is a change
                         if git diff --staged --quiet; then
-                            echo "No manifest changes."
-                            exit 0
+                            echo "No changes in manifest. Skipping push."
+                        else
+                            git commit -m "chore: update ${IMAGE_NAME} to tag ${TAG} [skip ci]"
+                            git push origin ${MANIFESTS_BRANCH}
                         fi
-                        git commit -m "ci: deploy ${IMAGE_NAME}:${TAG}"
-                        # Ensure push uses PAT (some Git versions strip credentials from clone URL in config)
-                        git remote set-url origin "${AUTH_REMOTE}"
-                        GIT_TERMINAL_PROMPT=0 git push origin "HEAD:${MANIFESTS_BRANCH}"
-                    '''
+                    """
                 }
             }
         }
     }
 
     post {
+        always {
+            // Important: keep the workspace clean to save disk space on the Jenkins node
+            cleanWs()
+        }
         success {
-            echo "Deployment successful: ${IMAGE_NAME}:${TAG}"
+            echo "Deployment successful: ${IMAGE_NAME}:${TAG} is now live."
+        }
+        failure {
+            echo "Pipeline failed. Please check the logs for Docker or Git auth issues."
         }
     }
 }
