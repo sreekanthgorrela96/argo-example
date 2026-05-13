@@ -66,8 +66,8 @@ pipeline {
                         git clone --depth 1 --branch "${MANIFESTS_BRANCH}" "$AUTH_REMOTE" manifest-checkout
                         cd manifest-checkout
                         sed -i "s|^[[:space:]]*image:.*|          image: ${IMAGE_NAME}:${TAG}|" "${KUSTOMIZE_DEPLOYMENT_PATH}"
-                        git config user.name "jenkins-bot"
-                        git config user.email "jenkins@secureforge.com"
+                        git config user.name "sreekanth gorrela"
+                        git config user.email "sreekanthgorrela96@gmail.com"
                         git add "${KUSTOMIZE_DEPLOYMENT_PATH}"
                         if git diff --staged --quiet; then
                             echo "No manifest changes."
