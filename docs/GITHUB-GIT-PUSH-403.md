@@ -43,3 +43,7 @@ If the repo is under an **SSO-enforced** org, open the token in GitHub → **Con
 The [Jenkinsfile](../Jenkinsfile) expects **`usernamePassword`**: password field = PAT. The clone URL uses **`x-access-token:${GIT_TOKEN}`**, which matches [GitHub’s HTTPS guidance](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#using-a-personal-access-token-on-the-command-line).
 
 If you use **Secret text** only, switch the pipeline to a `string` binding or keep **usernamePassword** with any username and the PAT in the password field.
+
+## 5. Remote URL stripped before push
+
+Some Git versions store `origin` **without** credentials after clone, so `git push` can hit GitHub without the PAT and return **403**. The Jenkinsfile runs `git remote set-url origin` to the `x-access-token` URL immediately before `git push`. If 403 persists after that change, focus on sections 1–3 (token scopes, branch protection, SSO).

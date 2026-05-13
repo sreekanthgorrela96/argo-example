@@ -74,7 +74,9 @@ pipeline {
                             exit 0
                         fi
                         git commit -m "ci: deploy ${IMAGE_NAME}:${TAG}"
-                        git push origin "HEAD:${MANIFESTS_BRANCH}"
+                        # Ensure push uses PAT (some Git versions strip credentials from clone URL in config)
+                        git remote set-url origin "${AUTH_REMOTE}"
+                        GIT_TERMINAL_PROMPT=0 git push origin "HEAD:${MANIFESTS_BRANCH}"
                     '''
                 }
             }
