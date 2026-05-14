@@ -7,7 +7,7 @@ remote: Permission to OWNER/REPO.git denied to USERNAME.
 fatal: unable to access 'https://github.com/...': The requested URL returned error: 403
 ```
 
-Docker and the manifest update (**sed** on the `image:` line that ends with `# secureforge-ci-image`) already worked; only **push** to GitHub failed.
+Docker and the manifest **sed** step already worked; only **push** to GitHub failed.
 
 ## 1. Personal access token (PAT) permissions
 

@@ -1,6 +1,6 @@
 # SecureForge GitOps (Minikube POC + enterprise)
 
-Jenkins (or manual Git) updates the `image:` line (suffix `# secureforge-ci-image`) in `k8s-manifests/base/deployment.yaml`; **Argo CD** syncs this repo to Kubernetes.
+Jenkins (or manual Git) updates the image in `k8s-manifests/base/deployment.yaml`; **Argo CD** syncs this repo to Kubernetes.
 
 ## Repository layout
 
