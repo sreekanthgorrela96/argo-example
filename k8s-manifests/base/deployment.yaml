@@ -22,8 +22,8 @@ spec:
     spec:
       containers:
         - name: ui
-          # Jenkins updates this line (image + tag)
-          image: docker.io/library/nginx:1.25-alpine
+          # Jenkins replaces the whole line; keep suffix # secureforge-ci-image
+          image: gorrelasreekanth/secureforge-ui:31  # secureforge-ci-image
           imagePullPolicy: Always
           ports:
             - name: http
