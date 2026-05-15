@@ -1,6 +1,8 @@
 # SecureForge GitOps (Minikube POC + enterprise)
 
-Jenkins (or manual Git) updates the image in `k8s-manifests/base/deployment.yaml`; **Argo CD** syncs this repo to Kubernetes.
+**Jenkins (CI)** builds and pushes a container image, then updates `image:` in `k8s-manifests/base/deployment.yaml` in Git. **Argo CD (CD)** syncs this repo to Kubernetes. No `kubectl apply` from Jenkins.
+
+**Full documentation:** **[docs/GITOPS-GUIDE.md](docs/GITOPS-GUIDE.md)** — architecture, setup order, verification checklist, on-prem notes.
 
 ## Repository layout
 
@@ -11,7 +13,8 @@ Jenkins (or manual Git) updates the image in `k8s-manifests/base/deployment.yaml
 | [k8s-manifests/overlays/prod](k8s-manifests/overlays/prod/) | 3 replicas + higher resources |
 | [argocd](argocd/) | `Application` and `AppProject` examples |
 | [scripts](scripts/) | Minikube bootstrap, Argo CD install, validation |
-| [docs](docs/) | E2E demo steps and enterprise hardening |
+| [docs/GITOPS-GUIDE.md](docs/GITOPS-GUIDE.md) | **Main guide** — CI/CD architecture, setup, verification |
+| [docs](docs/) | Jenkins local setup, E2E demo, enterprise hardening |
 | [enterprise](enterprise/) | Example patches (OIDC placeholder, ExternalSecret) |
 | [Jenkinsfile](Jenkinsfile) | Build → push → update manifests branch |
 | [docker-compose.jenkins.yml](docker-compose.jenkins.yml) | Local Jenkins (Docker) for CI POC |
@@ -68,7 +71,7 @@ Jenkins (or manual Git) updates the image in `k8s-manifests/base/deployment.yaml
    This writes `.env` with **`DOCKER_GID`** so user `jenkins` can access the Docker socket (see [docs/JENKINS-LOCAL.md](docs/JENKINS-LOCAL.md)).  
    Or: copy `.env.example` → `.env`, set `DOCKER_GID`, then `docker compose -f docker-compose.jenkins.yml up -d --build`
 2. Open **http://localhost:8081** (8081 avoids clashing with app port-forwards on 8080).
-3. Full steps (unlock, GitHub PAT credential `git-manifests-creds`, Pipeline from SCM): **[docs/JENKINS-LOCAL.md](docs/JENKINS-LOCAL.md)**.
+3. Full steps (unlock, GitHub PAT credential `github-token-creds`, Pipeline from SCM): **[docs/JENKINS-LOCAL.md](docs/JENKINS-LOCAL.md)**.
 
 If **`git push`** fails with **403**, see [docs/GITHUB-GIT-PUSH-403.md](docs/GITHUB-GIT-PUSH-403.md) (PAT scopes, branch protection, SSO).
 

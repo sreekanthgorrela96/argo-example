@@ -65,7 +65,7 @@ Open **http://localhost:8081**
 | Kind                  | ID                     | Usage |
 |-----------------------|------------------------|--------|
 | Username + password | `git-manifests-creds` **or** `github-token-creds` | GitHub username + **PAT** with `repo` scope. The [Jenkinsfile](https://github.com/sreekanthgorrela96/argo-example/blob/main/Jenkinsfile) in this repo uses ID **`github-token-creds`**. |
-| Username + password | `docker-hub-creds`    | Docker Hub; used with **`docker.withRegistry`** (install **Docker Pipeline** plugin). |
+| Username + password | `docker-hub-creds`    | Docker Hub; Jenkins runs **`docker login`** in the pipeline (see [Jenkinsfile](../Jenkinsfile)). |
 
 Set the **`DOCKER_IMAGE`** parameter when you build (e.g. `yourhubuser/secureforge-ui`). Do **not** use the placeholder `your-docker-repo/secureforge-ui` — that is not your Docker Hub namespace, and push will fail with `insufficient_scope` / `denied` even if you are logged in.
 
@@ -115,8 +115,8 @@ docker compose -f docker-compose.jenkins.yml down -v
 | `git push` **403** / `Permission denied` | PAT missing **write** access, **branch protection** on `main`, or **SSO** not authorized. See [docs/GITHUB-GIT-PUSH-403.md](GITHUB-GIT-PUSH-403.md). |
 | `permission denied while trying to connect to the Docker daemon socket` | Wrong **`DOCKER_GID`**. Run the `stat` / `alpine` command above, update `.env`, then `docker compose ... up -d --force-recreate`. Use **`jenkins-up.ps1`** to regenerate `.env`. |
 | `docker: not found` inside job | Rebuild image: `docker compose ... build --no-cache`. |
-| `git push` fails | PAT must have **repo** scope; credential ID must be exactly **`git-manifests-creds`**. |
-| `sed` / `sh` errors | Pipeline must run on the built-in Linux node (default for this container). Do not use Windows batch agents for this Jenkinsfile. |
+| `git push` fails | PAT must have **repo** scope; credential ID must be exactly **`github-token-creds`** (see [GITHUB-GIT-PUSH-403.md](GITHUB-GIT-PUSH-403.md)). |
+| `sed` / `sh` errors | Pipeline must run on the built-in Linux node (default for this container). Do not use Windows batch agents for this Jenkinsfile. The deployment `image:` line must end with **`# secureforge-ci-image`**. |
 
 ## Security note
 
