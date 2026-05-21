@@ -160,8 +160,11 @@ Stages in [Jenkinsfile](../Jenkinsfile):
 Manifest update (simplified):
 
 ```bash
-sed -i "s|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:${TAG}|g" k8s-manifests/base/deployment.yaml
+# Must match the current image line (nginx placeholder or a prior CI tag)
+sed -i "s|^[[:space:]]*image:.*|          image: ${IMAGE_NAME}:${TAG}|" k8s-manifests/base/deployment.yaml
 ```
+
+If Git still shows `nginx` after a green build, the old pattern `image: ${IMAGE_NAME}:.*` did not match — check the job log for **"No manifest changes"**.
 
 **Jenkins must not** deploy to Kubernetes directly.
 
@@ -271,7 +274,7 @@ More detail: [ENTERPRISE.md](ENTERPRISE.md)
 |-----------|----------------|---------------------|
 | Argo CD deploys from Git | Yes — Application `secureforge-ui` | Same; change `destination.server` |
 | Jenkins builds and pushes image | Yes — with `docker-hub-creds` | Use corporate Jenkins + registry |
-| Jenkins updates manifest in Git | Yes — with `github-token-creds` | Same; branch protection rules may apply |
+| Jenkins updates manifest in Git | Yes — with `github-token-creds`; `sed` replaces **any** `image:` line | Same; branch protection rules may apply |
 | Cluster runs declared image | Yes — after sync | Yes — after cluster registered |
 | No `kubectl apply` from Jenkins | Yes | Yes |
 
