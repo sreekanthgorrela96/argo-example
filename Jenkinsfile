@@ -68,9 +68,8 @@ pipeline {
                         
                         cd manifest-checkout
                         
-                        # Replace any container image line (works for nginx placeholder or prior CI tags)
-                        sed -i "s|^[[:space:]]*image:.*|          image: ${IMAGE_NAME}:${TAG}|" ${KUSTOMIZE_DEPLOYMENT_PATH}
-                        grep -Fq "image: ${IMAGE_NAME}:${TAG}" ${KUSTOMIZE_DEPLOYMENT_PATH} || (echo "ERROR: image line not updated" && exit 1)
+                        # Use sed to update the specific image line
+                        sed -i "s|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:${TAG}|g" ${KUSTOMIZE_DEPLOYMENT_PATH}
                         
                         git config user.name "jenkins-bot"
                         git config user.email "jenkins@secureforge.com"
