@@ -81,7 +81,7 @@ flowchart LR
 | **Cluster** | Minikube for POC; later kubeconfig for on-prem |
 | **Git** | GitHub repo `sreekanthgorrela96/argo-example` (or your fork) |
 | **Registry** | Docker Hub (or private registry) — image e.g. `gorrelasreekanth/secureforge-ui` |
-| **Jenkins credentials** | `docker-hub-creds`, `github-token-creds` (see [JENKINS-LOCAL.md](JENKINS-LOCAL.md)) |
+| **Jenkins credentials** | `docker-hub-creds`, `github-token2` (see [JENKINS-LOCAL.md](JENKINS-LOCAL.md)) |
 | **GitHub PAT** | `repo` scope (classic) or **Contents: Read and write** (fine-grained) |
 
 ---
@@ -127,7 +127,7 @@ Open **http://localhost:8081**, complete setup, add credentials, create Pipeline
 | Credential ID | Type | Contents |
 |---------------|------|----------|
 | `docker-hub-creds` | Username + password | Docker Hub user + token/password |
-| `github-token-creds` | Username + password | GitHub username + **PAT** (not the credential ID string) |
+| `github-token2` | Username + password | GitHub username + **PAT** with **write** (not the credential ID string) |
 
 Pipeline job:
 
@@ -274,7 +274,7 @@ More detail: [ENTERPRISE.md](ENTERPRISE.md)
 |-----------|----------------|---------------------|
 | Argo CD deploys from Git | Yes — Application `secureforge-ui` | Same; change `destination.server` |
 | Jenkins builds and pushes image | Yes — with `docker-hub-creds` | Use corporate Jenkins + registry |
-| Jenkins updates manifest in Git | Yes — with `github-token-creds`; `sed` replaces **any** `image:` line | Same; branch protection rules may apply |
+| Jenkins updates manifest in Git | Yes — with `github-token2`; `sed` replaces **any** `image:` line | Same; branch protection rules may apply |
 | Cluster runs declared image | Yes — after sync | Yes — after cluster registered |
 | No `kubectl apply` from Jenkins | Yes | Yes |
 
