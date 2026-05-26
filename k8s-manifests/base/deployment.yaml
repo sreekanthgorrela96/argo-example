@@ -23,7 +23,7 @@ spec:
       containers:
         - name: ui
           # Jenkins updates this line (image + tag)
-          image: docker.io/library/nginx:1.25-alpine
+          image: gorrelasreekanth/secureforge-ui:47
           imagePullPolicy: Always
           ports:
             - name: http
