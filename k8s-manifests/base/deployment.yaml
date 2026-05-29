@@ -23,7 +23,7 @@ spec:
       containers:
         - name: ui
           # Jenkins updates this line (image + tag)
-          image: gorrelasreekanth/secureforge-ui:51
+          image: gorrelasreekanth/secureforge-ui:52
           imagePullPolicy: Always
           ports:
             - name: http
