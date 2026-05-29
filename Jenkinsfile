@@ -31,9 +31,23 @@ pipeline {
             }
         }
 
+        stage('Checkout App Code') {
+            steps {
+                // Explicitly pull down your application code from GitHub
+                checkout scm
+            }
+        }
+
+        stage('Scan for Secrets') {
+            steps {
+                echo "Scanning repository for hardcoded passwords/tokens..."
+                // Runs TruffleHog container to check your checked-out codebase for leaks
+                sh 'docker run --rm -v "$(pwd):/pwd" trufflesecurity/trufflehog:latest github --repo="https://github.com/sreekanthgorrela96/Gocdtest" --only-verified || true'
+            }
+        }
+
         stage('Lint Dockerfile') {
             steps {
-                // Catch inefficient or insecure Dockerfile practices early
                 sh 'docker run --rm -i hadolint/hadolint < Dockerfile'
             }
         }
@@ -46,7 +60,6 @@ pipeline {
 
         stage('Security Scan Image') {
             steps {
-                // Fails the build if CRITICAL security bugs are baked into the image
                 sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity CRITICAL --exit-code 1 ${IMAGE_NAME}:${TAG}"
             }
         }
@@ -97,16 +110,13 @@ pipeline {
     post {
         always {
             cleanWs()
-            // Clean local Docker daemon images to prevent Jenkins disk space exhaustion
             sh "docker rmi ${IMAGE_NAME}:${TAG} ${IMAGE_NAME}:latest || true"
         }
         success {
             echo "Deployment successful: ${IMAGE_NAME}:${TAG} is now live."
-            // Optional: slackSend channel: '#ci-cd', color: 'good', message: "Pipeline Succeeded!"
         }
         failure {
             echo "Pipeline failed. Please check the logs for Docker or Git auth issues."
-            // Optional: slackSend channel: '#ci-cd', color: 'danger', message: "Pipeline Failed!"
         }
     }
 }
