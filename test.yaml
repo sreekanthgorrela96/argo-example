@@ -1,0 +1,8 @@
+---
+- name: Test AWX inventory
+  hosts: appservers
+  gather_facts: false
+
+  tasks:
+    - name: Ping application servers
+      ansible.builtin.ping:
