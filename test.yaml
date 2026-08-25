@@ -1,6 +1,6 @@
 ---
 - name: Test AWX inventory
-  hosts: appservers
+  hosts: Production
   gather_facts: false
 
   tasks:
